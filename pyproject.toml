@@ -1,0 +1,10 @@
+
+[tool.ruff]
+line-length = 90
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "def main\\(",
+]

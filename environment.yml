@@ -43,3 +43,4 @@ dependencies:
     - gym[classic_control,atari,accept-rom-license]  # used only in ch18
     - google-cloud-aiplatform~=1.36.2  # used only in chapter 19
     - google-cloud-storage~=2.13.0  # used only in chapter 19
+    - pre-commit >= 3.5.0
