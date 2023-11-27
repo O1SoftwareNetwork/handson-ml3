@@ -39,6 +39,7 @@ Try
 
     make lint
 
-to verify the homl3 environment can access libraries, such as isort.
+to verify the homl3 environment can access libraries, such as
+[isort](https://pypi.org/project/isort).
 
 That's it, you're done!

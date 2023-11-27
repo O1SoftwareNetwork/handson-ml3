@@ -22,8 +22,8 @@ The `constant/out/` subdirectory is a good place to put large files,
 since it is ignored by git.
 
 Notebook .ipynb files can be large, so consider trimming
-image results from them before committing.
-On the flip side, you might want github to display
+image results with `nbstripout` before committing.
+On the flip side, you might want GitHub to display
 analysis images, so it's a judgement call, just
 understand the tradeoffs and make a conscious decision.
 
@@ -41,13 +41,14 @@ https://github.com/O1SoftwareNetwork/handson-ml3/issues ,
 and assign it to yourself.
 
 Then create a branch named for the issue.
-When the feature is complete
+When the feature is complete,
+ensure that `make lint` is clean,
 create a pull request,
 assign it to someone else for review,
 and merge the approved PR down to `main`.
 We use the "squash and merge" option
 to keep the commit history tidy.
-Now you should delete the branch.
+Now you should delete that feature branch.
 Create a new issue if there's still more to do.
 It should be rare that you have more than
 one or two branches at a time.
@@ -55,9 +56,10 @@ one or two branches at a time.
 Read and critique your own code before assigning any review tasks.
 Delete commented code, tidy up TODOs, try to make
 it easy for the reviewer to understand your proposed changes.
-Often a unittest suite will be a good way to demonstrate
+Small PRs are easy to quickly review and approve.
+Extract helper functions where you see copy-n-paste repetition.
+Adding unittests will often be a good way to demonstrate
 how you expect the code to be used.
-Extract helper functions where you see copy-n-paste repitition.
 Rename obscure variables, add a docstring to any function
 whose name does not make it self-explanatory.
 Consider adding optional type annotations to function signatures.
@@ -69,6 +71,28 @@ to have that happen automatically.
 
 ----
 
+# reviewing
+
+Why do we review before a merge-to-`main`?
+
+For code that will run in production,
+a review verifies that other team members
+will be able to understand and maintain
+that code down the road.
+
+For all code (or term papers!), having a
+second set of eyes  look over it will often catch
+issues that slipped past  the original author.
+It offers an excellent teaching opportunity
+to share best practices and handy libraries
+that the author might not have known about.
+
+And the author is also teaching team members about
+the new code, and the techniques and libraries
+that it uses.
+
+----
+
 # rebasing
 
 We don't rebase.
@@ -76,8 +100,8 @@ We don't rebase.
 Never use `--force` in a `git push` command.
 
 Using `--amend` is fine, as long as you've
-not yet pushed that commit to github.
+not yet pushed that commit to GitHub.
 
 As mentioned above,
 use the `--squash` option  when merging a pull request.
-The github web UI makes this very easy.
+The GitHub web UI makes this very easy.
