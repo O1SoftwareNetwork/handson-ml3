@@ -29,6 +29,7 @@ dependencies:
   - tqdm=4.66  # used only in chapter 12 to display nice progress bars
   - wheel  # built-package format for pip
   - widgetsnbextension=4.0  # interactive HTML widgets for Jupyter notebooks
+  - google-colab >= 1.0.0
   - pip:
     - keras-core  # used in chapter 10
     - keras-tuner~=1.4.6  # used in chapters 10 and 19 for hyperparameter tuning
