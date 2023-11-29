@@ -22,6 +22,6 @@ def temp_dir() -> Path:
         "linux": "/tmp",
         "win32": r"C:\temp",
     }
-    folder =  Path(temporary[sys.platform])
+    folder = Path(temporary[sys.platform])
     assert folder.is_dir()
     return folder

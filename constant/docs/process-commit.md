@@ -91,6 +91,39 @@ And the author is also teaching team members about
 the new code, and the techniques and libraries
 that it uses.
 
+## one-day rule
+
+Reviews take a day, at most. Period.
+They are not onerous, they are not an obstacle,
+they do not get in a developer's way.
+
+Reviews are here to help you.
+We all learn from them.
+
+Reviewers should respond within 24 hours of a review request.
+Send a "thumbs up LGTM" click, or a review,
+or a comment that is the beginning of a review,
+or at least a "need to consider this, will get back to you tomorrow."
+If reviewers are silent for 24 hours,
+they have waived the right to improve this particular commit,
+and the PR is auto-approved.
+Author may merge it to main at their leisure.
+
+## author performs merge
+
+Who should merge to `main`?
+
+The project owner (Jim), or any reviewer, _could_ click "squash merge".
+But good manners suggests we should wait for the original author
+to merge the PR.
+
+Why? Time has passed, review remarks have come rolling in,
+new ideas have suggested themselves.
+It is common for an author to wish to make some minor
+last-minute edits prior to final commit and merge.
+Being small, or in line with reviewer suggestions,
+these are not subject to awaiting another round of review.
+
 ----
 
 # rebasing
