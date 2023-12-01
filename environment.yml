@@ -15,7 +15,7 @@ dependencies:
   - nbdime=3.2  # optional tool to diff Jupyter notebooks
   - nltk=3.8  # optionally used in chapter 3, exercise 4
   - numexpr=2.8  # used only in the Pandas tutorial for numerical expressions
-  - numpy >= 1.25.2  # Powerful n-dimensional arrays and numerical computing tools
+  - numpy ~= 1.25.2  # Powerful n-dimensional arrays and numerical computing tools
   - pandas >= 2.0.3  # data analysis and manipulation tool
   - pillow=10.1  # image manipulation library, (used by matplotlib.image.imread)
   - pip  # Python's package-management system
@@ -29,7 +29,6 @@ dependencies:
   - tqdm=4.66  # used only in chapter 12 to display nice progress bars
   - wheel  # built-package format for pip
   - widgetsnbextension=4.0  # interactive HTML widgets for Jupyter notebooks
-  - google-colab >= 1.0.0
   - pip:
     - keras-core  # used in chapter 10
     - keras-tuner~=1.4.6  # used in chapters 10 and 19 for hyperparameter tuning
@@ -46,14 +45,18 @@ dependencies:
     - google-cloud-storage~=2.13.0  # used only in chapter 19
     - beartype >= 0.16.4
     - black[jupyter] >= 23.11.0
+    - geopy >= 2.4.1
     - hypothesis >= 6.88.4
     - isort >= 5.12.0
     - mypy >= 1.7.0
     - nbstripout >= 0.6.1
+    - pandas-stubs >= 2.1.1
     - pre-commit >= 3.5.0
     - pytest-cov >= 4.1.0
     - ruamel.yaml >= 0.18.5
     - ruff >= 0.1.5
+    - sweetviz >= 2.3.1
     - typer >= 0.9.0
+    - types_openpyxl >= 3.1.0
     - uszipcode >= 1.0.1
     - ydata-profiling >= 4.6.1
