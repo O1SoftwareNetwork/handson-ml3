@@ -17,6 +17,7 @@ $(TEMP):
 
 $(ORIG_DATASET):
 	cd $(shell dirname $@) && kaggle competitions download -c nyc-taxi-trip-duration
+	touch $@
 
 $(TEMP)/train.zip: $(TEMP) $(ORIG_DATASET)
 	unzip -d $(TEMP) -u $(ORIG_DATASET)
@@ -24,8 +25,8 @@ $(TEMP)/train.zip: $(TEMP) $(ORIG_DATASET)
 
 $(TRAIN): $(TEMP)/train.zip
 	unzip -d $(TEMP) -u $<
-	test $$(wc -l < $@) -eq 1458645
 	touch $@
+	test $$(wc -l < $@) -eq 1458645
 
 $(TEMP)/train-10k.csv: $(TRAIN)
 	head -n 10001 $<  > $@
