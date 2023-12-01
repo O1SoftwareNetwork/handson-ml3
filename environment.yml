@@ -48,6 +48,7 @@ dependencies:
     - geopy >= 2.4.1
     - hypothesis >= 6.88.4
     - isort >= 5.12.0
+    - kaggle >= 1.5.16
     - mypy >= 1.7.0
     - nbstripout >= 0.6.1
     - pandas-stubs >= 2.1.1
