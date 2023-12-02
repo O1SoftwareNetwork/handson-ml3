@@ -4,10 +4,10 @@
 
 from pathlib import Path
 
-import geopy.distance
 import pandas as pd
 import sqlalchemy as sa
 import typer
+from geopy.distance import distance
 from ruamel.yaml import YAML
 
 
@@ -65,12 +65,10 @@ class Etl:
 
     @staticmethod
     def _distance(row, center) -> float:
-        return round(
-            geopy.distance.distance(
-                (row.dropoff_latitude, row.dropoff_longitude), center
-            ).m,
-            2,
-        )
+        from_ = row.pickup_latitude, row.pickup_longitude
+        to = row.dropoff_latitude, row.dropoff_longitude
+        dist = distance(from_, to).m
+        return round(dist, 2)
 
     @classmethod
     def _find_distance(cls, df: pd.DataFrame) -> pd.DataFrame:
