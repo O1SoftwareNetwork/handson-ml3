@@ -12,6 +12,9 @@ import typer
 from geopy.distance import distance
 from ruamel.yaml import YAML
 
+CONFIG_FILE = Path("taxi.yml")
+COMPRESSED_DATASET = Path("/tmp/constant/trip.parquet")
+
 
 def timed(func, reporting_threshold_sec=0.1):
     def wrapped(*args, **kwargs):
@@ -57,7 +60,7 @@ class Etl:
 
         df.to_parquet(self.folder / "trip.parquet", index=False)
 
-        self._write_yaml(df)
+        # self._write_yaml(df)
 
     def _discard_unhelpful_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         delayed = self._round(df[df.store_and_fwd_flag == "Y"])
@@ -107,12 +110,7 @@ class Etl:
     def _distance(cls, row) -> float:
         from_ = row.pickup_latitude, row.pickup_longitude
         to = row.dropoff_latitude, row.dropoff_longitude
-        dist = distance(from_, to).m
-
-        # A post-processing step will discard trips that start "too far away".
-        if distance(from_, cls.grand_central_nyc).m > cls.SERVICE_RADIUS:
-            dist = -dist
-        return round(dist, 2)
+        return round(distance(from_, to).m, 2)
 
     @classmethod
     def _find_distance(cls, df: pd.DataFrame) -> pd.DataFrame:
@@ -125,22 +123,29 @@ class Etl:
     SERVICE_RADIUS = 150_000  # 93 miles
 
     def _discard_outlier_rows(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df[df.distance >= 0]
-        giant_radius = self._round(df[df.distance >= self.SERVICE_RADIUS])
-        giant_radius.to_csv(self.folder / "outlier_giant_radius.csv", index=False)
-
         FOUR_HOURS = 4 * 60 * 60  # Somewhat commonly we see 86400 second "trips".
         long_trips = self._round(df[df.trip_duration >= FOUR_HOURS])
         long_trips.to_csv(self.folder / "outlier_long_trips.csv", index=False)
         # Discard trips where cabbie forgot to turn off the meter.
         df = df[df.trip_duration < FOUR_HOURS]
 
-        df = df[df.distance < self.SERVICE_RADIUS]
+        ul, lr = self._read_yaml_bbox()
+        df = df[
+            True
+            & (lr[0] < df.pickup_latitude)
+            & (df.pickup_latitude < ul[0])
+            & (ul[1] < df.pickup_longitude)
+            & (df.pickup_longitude < lr[1])
+            & (lr[0] < df.dropoff_latitude)
+            & (df.dropoff_latitude < ul[0])
+            & (ul[1] < df.dropoff_longitude)
+            & (df.dropoff_longitude < lr[1])
+        ]
 
         assert df.passenger_count.max() <= 9
         return df
 
-    def _write_yaml(self, df: pd.DataFrame, out_file="taxi.yml") -> None:
+    def _write_yaml(self, df: pd.DataFrame, out_file=CONFIG_FILE) -> None:
         ul, lr = self._get_bbox(df)
 
         d = dict(
@@ -153,6 +158,12 @@ class Etl:
         )
         yaml = YAML()
         yaml.dump(d, Path(out_file))
+
+    def _read_yaml_bbox(
+        self, in_file=CONFIG_FILE
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
+        d = YAML().load(Path(in_file))
+        return d["ul"], d["lr"]
 
     @staticmethod
     def _get_bbox(
