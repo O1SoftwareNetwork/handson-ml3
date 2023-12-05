@@ -17,10 +17,9 @@ def timed(func, reporting_threshold_sec=0.1):
     def wrapped(*args, **kwargs):
         t0 = time()
         ret = func(*args, **kwargs)
-        if func.__name__ != "wrapped":
-            elapsed = time() - t0
-            if elapsed > reporting_threshold_sec:
-                print(f"  Elapsed time of {elapsed:.3f} seconds for {func.__name__}")
+        elapsed = time() - t0
+        if elapsed > reporting_threshold_sec and func.__name__ != "wrapped":
+            print(f"  Elapsed time of {elapsed:.3f} seconds for {func.__name__}")
         return ret
 
     return wrapped
@@ -30,6 +29,7 @@ class Etl:
     """Extract, transform, and load Kaggle taxi data into a SQLite trip table."""
 
     def __init__(self, db_file: Path, decorator=timed) -> None:
+        self.folder = db_file.parent.resolve()
         self.engine = sa.create_engine(f"sqlite:///{db_file}")
 
         for method_name in dir(self) + dir(Etl):
@@ -55,10 +55,14 @@ class Etl:
             sess.execute(self.ddl)
         df.to_sql("trip", self.engine, if_exists="append", index=False)
 
+        df.to_parquet(self.folder / "trip.parquet", index=False)
+
         self._write_yaml(df)
 
-    @staticmethod
-    def _discard_unhelpful_columns(df: pd.DataFrame) -> pd.DataFrame:
+    def _discard_unhelpful_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        delayed = self._round(df[df.store_and_fwd_flag == "Y"])
+        delayed.to_csv(self.folder / "outlier_delayed.csv", index=False)
+
         df = df.drop(columns=["vendor_id"])  # TPEP: Creative Mobile or Verifone
         df = df.drop(columns=["store_and_fwd_flag"])  # only Y when out-of-range
         return df
@@ -79,6 +83,20 @@ class Etl:
     )
     """
     )
+
+    @staticmethod
+    def _round(df: pd.DataFrame, precision: int = 4) -> pd.DataFrame:
+        cols = [
+            "pickup_longitude",
+            "pickup_latitude",
+            "dropoff_longitude",
+            "dropoff_latitude",
+        ]
+        t = pd.DataFrame()
+        for col in cols:
+            t[col] = df[col].round(precision)
+        df = df.drop(columns=cols)
+        return pd.concat([df, t], axis=1)
 
     # This is very near both the median pickup and median dropoff point,
     # Bryant Park behind the lions at the NYPL.
@@ -106,15 +124,18 @@ class Etl:
     # SERVICE_RADIUS = 60_000  # 37 miles
     SERVICE_RADIUS = 150_000  # 93 miles
 
-    @classmethod
-    def _discard_outlier_rows(cls, df: pd.DataFrame) -> pd.DataFrame:
+    def _discard_outlier_rows(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df[df.distance >= 0]
+        giant_radius = self._round(df[df.distance >= self.SERVICE_RADIUS])
+        giant_radius.to_csv(self.folder / "outlier_giant_radius.csv", index=False)
 
         FOUR_HOURS = 4 * 60 * 60  # Somewhat commonly we see 86400 second "trips".
+        long_trips = self._round(df[df.trip_duration >= FOUR_HOURS])
+        long_trips.to_csv(self.folder / "outlier_long_trips.csv", index=False)
         # Discard trips where cabbie forgot to turn off the meter.
         df = df[df.trip_duration < FOUR_HOURS]
 
-        df = df[df.distance < cls.SERVICE_RADIUS]
+        df = df[df.distance < self.SERVICE_RADIUS]
 
         assert df.passenger_count.max() <= 9
         return df
@@ -141,8 +162,10 @@ class Etl:
         s_lat = round(min(df.pickup_latitude.min(), df.dropoff_latitude.min()), prec)
         w_lng = round(min(df.pickup_longitude.min(), df.dropoff_longitude.min()), prec)
         e_lng = round(max(df.pickup_longitude.max(), df.dropoff_longitude.max()), prec)
-        ul = tuple(map(float, (n_lat, w_lng)))
-        lr = tuple(map(float, (s_lat, e_lng)))
+        up, lf = map(float, (n_lat, w_lng))
+        lw, rt = map(float, (s_lat, e_lng))
+        ul = up, lf
+        lr = lw, rt
         return ul, lr
 
 
