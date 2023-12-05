@@ -2,7 +2,9 @@
 # Copyright 2023 O1 Software Network. MIT licensed.
 
 
+import re
 from pathlib import Path
+from time import time
 
 import pandas as pd
 import sqlalchemy as sa
@@ -11,11 +13,30 @@ from geopy.distance import distance
 from ruamel.yaml import YAML
 
 
+def timed(func, reporting_threshold_sec=0.1):
+    def wrapped(*args, **kwargs):
+        t0 = time()
+        ret = func(*args, **kwargs)
+        if func.__name__ != "wrapped":
+            elapsed = time() - t0
+            if elapsed > reporting_threshold_sec:
+                print(f"  Elapsed time of {elapsed:.3f} seconds for {func.__name__}")
+        return ret
+
+    return wrapped
+
+
 class Etl:
     """Extract, transform, and load Kaggle taxi data into a SQLite trip table."""
 
-    def __init__(self, db_file: Path) -> None:
+    def __init__(self, db_file: Path, decorator=timed) -> None:
         self.engine = sa.create_engine(f"sqlite:///{db_file}")
+
+        for method_name in dir(self) + dir(Etl):
+            attr = getattr(self, method_name)
+            if re.match(r"<class '(function|method)'>", str(type(attr))):
+                wrapped = decorator(attr)
+                setattr(self, method_name, wrapped)
 
     def create_table(self, in_csv: Path) -> None:
         date_cols = ["pickup_datetime", "dropoff_datetime"]
