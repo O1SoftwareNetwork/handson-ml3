@@ -13,10 +13,11 @@ from geopy.distance import distance
 from ruamel.yaml import YAML
 
 from constant.ch02_taxi.jh.features import grand_central_nyc
+from constant.util.path import constant, temp_dir
 from constant.util.timing import timed
 
-CONFIG_FILE = Path(__file__).parent / "taxi.yml"
-COMPRESSED_DATASET = Path("/tmp/constant/trip.parquet")
+CONFIG_FILE = constant() / "ch02_taxi/jh/taxi.yml"
+COMPRESSED_DATASET = temp_dir() / "constant/trip.parquet"
 
 
 class Etl:
@@ -51,7 +52,7 @@ class Etl:
 
         df.to_parquet(self.folder / "trip.parquet", index=False)
 
-        # self._write_yaml(df)
+        # self._write_yaml_bbox(df)
 
     def _discard_unhelpful_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         delayed = self._round(df[df.store_and_fwd_flag == "Y"])
@@ -93,7 +94,7 @@ class Etl:
         return pd.concat([df, t], axis=1)
 
     @classmethod
-    def _distance(cls, row: pd.Series[float]) -> float:
+    def _distance(cls, row: pd.Series) -> float:
         from_ = row.pickup_latitude, row.pickup_longitude
         to = row.dropoff_latitude, row.dropoff_longitude
         meters: float = distance(from_, to).m
@@ -132,7 +133,7 @@ class Etl:
         assert df.passenger_count.max() <= 9
         return df
 
-    def _write_yaml(self, df: pd.DataFrame, out_file: Path = CONFIG_FILE) -> None:
+    def _write_yaml_bbox(self, df: pd.DataFrame, out_file: Path = CONFIG_FILE) -> None:
         ul, lr = self._get_bbox(df)
 
         d = dict(

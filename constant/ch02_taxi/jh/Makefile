@@ -31,6 +31,8 @@ $(TRAIN): $(TEMP)/train.zip
 $(TEMP)/train-10k.csv: $(TRAIN)
 	head -n 10001 $<  > $@
 
+export PYTHONPATH += :../../..
+
 $(TEMP)/taxi.db: $(TEMP)/train-10k.csv
 	./etl.py $<
 

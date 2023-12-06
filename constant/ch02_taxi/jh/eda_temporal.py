@@ -1,6 +1,7 @@
 #! /usr/bin/env streamlit run --server.runOnSave true
 # Copyright 2023 O1 Software Network. MIT licensed.
 
+import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -11,6 +12,11 @@ from beartype import beartype
 
 from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET
 from constant.ch02_taxi.jh.features import add_pickup_dow_hour
+
+warnings.filterwarnings(
+    "ignore",
+    message="is_categorical_dtype is deprecated and will be removed in a future version.",
+)
 
 
 def eda_time(df: pd.DataFrame, num_rows: int = 100_000) -> None:

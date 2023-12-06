@@ -22,8 +22,8 @@ grand_central_nyc = 40.752, -73.978
 
 def add_pickup_dow_hour(df: pd.DataFrame) -> pd.DataFrame:
     """Add day-of-week and hour-of-day features."""
-    df["dow"] = df["pickup_datetime"].dt.dayofweek  # Monday=0, Sunday=6
-    df["hour"] = df["pickup_datetime"].dt.hour
+    df.loc[:, ("dow",)] = df["pickup_datetime"].copy().dt.dayofweek  # Monday=0
+    df.loc[:, ("hour",)] = df["pickup_datetime"].copy().dt.hour
     return df
 
 
