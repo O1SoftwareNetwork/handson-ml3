@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # Copyright 2023 O1 Software Network. MIT licensed.
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -11,7 +13,7 @@ from constant.ch02_taxi.jh.features import add_pickup_dow_hour
 
 
 @beartype
-def eda_map(df: pd.DataFrame, num_rows=100_000) -> None:
+def eda_map(df: pd.DataFrame, num_rows: int = 100_000) -> None:
     etl = Etl(COMPRESSED_DATASET.parent / "taxi.db")
     df = etl.discard_outlier_rows(df)[:num_rows]
     df = add_pickup_dow_hour(df)
@@ -36,7 +38,7 @@ def show_trip_locations(df: pd.DataFrame) -> None:
 
 
 @beartype
-def main(in_file=COMPRESSED_DATASET) -> None:
+def main(in_file: Path = COMPRESSED_DATASET) -> None:
     eda_map(pd.read_parquet(in_file))
 
 

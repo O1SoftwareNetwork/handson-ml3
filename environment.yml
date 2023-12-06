@@ -50,6 +50,7 @@ dependencies:
     - hypothesis >= 6.88.4
     - isort >= 5.12.0
     - kaggle >= 1.5.16
+    - matplotlib_stubs >= 0.2.0
     - mypy >= 1.7.0
     - nbstripout >= 0.6.1
     - pandas-stubs >= 2.0.3
@@ -58,10 +59,12 @@ dependencies:
     - pytest-cov >= 4.1.0
     - ruamel.yaml >= 0.18.5
     - ruff >= 0.1.5
+    - sqlalchemy_stubs >= 0.4
     - streamlit >= 1.29.0
     - sweetviz >= 2.3.1
     - typer >= 0.9.0
     - types_openpyxl >= 3.1.0
+    - types_seaborn >= 0.13.0
     - uszipcode >= 1.0.1
     - watchdog >= 3.0.0
-    - ydata-profiling >= 4.6.1
+    - ydata-profiling >= 4.6.3

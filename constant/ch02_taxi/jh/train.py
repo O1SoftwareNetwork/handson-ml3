@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # Copyright 2023 O1 Software Network. MIT licensed.
 
+from pathlib import Path
 
 import pandas as pd
 from beartype import beartype
@@ -14,7 +15,7 @@ def train_duration_model(df: pd.DataFrame) -> None:
     print(df)
 
 
-def main(in_file=COMPRESSED_DATASET) -> None:
+def main(in_file: Path = COMPRESSED_DATASET) -> None:
     train_duration_model(pd.read_parquet(in_file))
 
 

@@ -5,6 +5,7 @@
 import re
 from pathlib import Path
 from time import time
+from typing import Any, Callable
 
 import pandas as pd
 import sqlalchemy as sa
@@ -12,12 +13,16 @@ import typer
 from geopy.distance import distance
 from ruamel.yaml import YAML
 
+from constant.ch02_taxi.jh.features import grand_central_nyc
+
 CONFIG_FILE = Path(__file__).parent / "taxi.yml"
 COMPRESSED_DATASET = Path("/tmp/constant/trip.parquet")
 
 
-def timed(func, reporting_threshold_sec=0.1):
-    def wrapped(*args, **kwargs):
+def timed(
+    func: Callable[[Any], Any], reporting_threshold_sec: float = 0.1
+) -> Callable[[Any], Any]:
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
         t0 = time()
         ret = func(*args, **kwargs)
         elapsed = time() - t0
@@ -28,16 +33,10 @@ def timed(func, reporting_threshold_sec=0.1):
     return wrapped
 
 
-# This is very near both the median pickup and median dropoff point,
-# Bryant Park behind the lions at the NYPL.
-# Distance from pickup to Grand Central can help with removing outliers.
-grand_central_nyc = 40.752, -73.978
-
-
 class Etl:
     """Extract, transform, and load Kaggle taxi data into a SQLite trip table."""
 
-    def __init__(self, db_file: Path, decorator=timed) -> None:
+    def __init__(self, db_file: Path, decorator: Callable[[Any], Any] = timed) -> None:
         self.folder = db_file.parent.resolve()
         self.engine = sa.create_engine(f"sqlite:///{db_file}")
 
@@ -108,10 +107,11 @@ class Etl:
         return pd.concat([df, t], axis=1)
 
     @classmethod
-    def _distance(cls, row) -> float:
+    def _distance(cls, row: pd.Series[float]) -> float:
         from_ = row.pickup_latitude, row.pickup_longitude
         to = row.dropoff_latitude, row.dropoff_longitude
-        return round(distance(from_, to).m, 2)
+        meters: float = distance(from_, to).m
+        return round(meters, 2)
 
     @classmethod
     def _find_distance(cls, df: pd.DataFrame) -> pd.DataFrame:
@@ -146,7 +146,7 @@ class Etl:
         assert df.passenger_count.max() <= 9
         return df
 
-    def _write_yaml(self, df: pd.DataFrame, out_file=CONFIG_FILE) -> None:
+    def _write_yaml(self, df: pd.DataFrame, out_file: Path = CONFIG_FILE) -> None:
         ul, lr = self._get_bbox(df)
 
         d = dict(
@@ -162,7 +162,7 @@ class Etl:
 
     @staticmethod
     def _read_yaml_bbox(
-        in_file=CONFIG_FILE,
+        in_file: Path = CONFIG_FILE,
     ) -> tuple[tuple[float, float], tuple[float, float]]:
         d = YAML().load(Path(in_file))
         return d["ul"], d["lr"]

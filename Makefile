@@ -7,7 +7,7 @@ lint:
 	isort constant/
 	ruff .
 
-MYPY = mypy --ignore-missing-imports
+MYPY = mypy --ignore-missing-imports --no-namespace-packages
 
 type: typecheck
 typecheck:
