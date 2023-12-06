@@ -12,7 +12,7 @@ import typer
 from geopy.distance import distance
 from ruamel.yaml import YAML
 
-CONFIG_FILE = Path("taxi.yml")
+CONFIG_FILE = Path(__file__).parent / "taxi.yml"
 COMPRESSED_DATASET = Path("/tmp/constant/trip.parquet")
 
 
@@ -47,7 +47,7 @@ class Etl:
         df = self._discard_unhelpful_columns(df)
         df["distance"] = 0.0
         self._find_distance(df)  # This costs 6 minutes for 1.46 M rows (4200 row/sec)
-        self._discard_outlier_rows(df)
+        self.discard_outlier_rows(df)
 
         one_second = "1s"  # trim meaningless milliseconds from observations
         for col in date_cols:
@@ -122,7 +122,7 @@ class Etl:
     # SERVICE_RADIUS = 60_000  # 37 miles
     SERVICE_RADIUS = 150_000  # 93 miles
 
-    def _discard_outlier_rows(self, df: pd.DataFrame) -> pd.DataFrame:
+    def discard_outlier_rows(self, df: pd.DataFrame) -> pd.DataFrame:
         FOUR_HOURS = 4 * 60 * 60  # Somewhat commonly we see 86400 second "trips".
         long_trips = self._round(df[df.trip_duration >= FOUR_HOURS])
         long_trips.to_csv(self.folder / "outlier_long_trips.csv", index=False)
