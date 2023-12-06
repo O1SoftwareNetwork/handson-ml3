@@ -1,4 +1,4 @@
-#! /usr/bin/env streamlit run --server.runOnSave true
+#! /usr/bin/env python
 # Copyright 2023 O1 Software Network. MIT licensed.
 
 import matplotlib.pyplot as plt
@@ -7,12 +7,14 @@ import seaborn as sns
 from beartype import beartype
 
 from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET, Etl
+from constant.ch02_taxi.jh.features import add_pickup_dow_hour
 
 
 @beartype
 def eda(df: pd.DataFrame, num_rows=100_000) -> None:
     etl = Etl(COMPRESSED_DATASET.parent / "taxi.db")
     df = etl.discard_outlier_rows(df)[:num_rows]
+    df = add_pickup_dow_hour(df)
     show_trip_locations(df)
 
 
