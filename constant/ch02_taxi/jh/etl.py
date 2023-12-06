@@ -4,7 +4,6 @@
 
 import re
 from pathlib import Path
-from time import time
 from typing import Any, Callable
 
 import pandas as pd
@@ -14,23 +13,10 @@ from geopy.distance import distance
 from ruamel.yaml import YAML
 
 from constant.ch02_taxi.jh.features import grand_central_nyc
+from constant.util.timing import timed
 
 CONFIG_FILE = Path(__file__).parent / "taxi.yml"
 COMPRESSED_DATASET = Path("/tmp/constant/trip.parquet")
-
-
-def timed(
-    func: Callable[[Any], Any], reporting_threshold_sec: float = 0.1
-) -> Callable[[Any], Any]:
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
-        t0 = time()
-        ret = func(*args, **kwargs)
-        elapsed = time() - t0
-        if elapsed > reporting_threshold_sec and func.__name__ != "wrapped":
-            print(f"  Elapsed time of {elapsed:.3f} seconds for {func.__name__}")
-        return ret
-
-    return wrapped
 
 
 class Etl:
