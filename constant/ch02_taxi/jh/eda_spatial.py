@@ -11,13 +11,14 @@ from constant.ch02_taxi.jh.features import add_pickup_dow_hour
 
 
 @beartype
-def eda(df: pd.DataFrame, num_rows=100_000) -> None:
+def eda_map(df: pd.DataFrame, num_rows=100_000) -> None:
     etl = Etl(COMPRESSED_DATASET.parent / "taxi.db")
     df = etl.discard_outlier_rows(df)[:num_rows]
     df = add_pickup_dow_hour(df)
     show_trip_locations(df)
 
 
+@beartype
 def show_trip_locations(df: pd.DataFrame) -> None:
     fig, _ = plt.subplots()
     assert fig
@@ -34,8 +35,9 @@ def show_trip_locations(df: pd.DataFrame) -> None:
     plt.show()
 
 
+@beartype
 def main(in_file=COMPRESSED_DATASET) -> None:
-    eda(pd.read_parquet(in_file))
+    eda_map(pd.read_parquet(in_file))
 
 
 if __name__ == "__main__":

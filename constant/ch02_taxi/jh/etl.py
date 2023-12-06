@@ -28,6 +28,12 @@ def timed(func, reporting_threshold_sec=0.1):
     return wrapped
 
 
+# This is very near both the median pickup and median dropoff point,
+# Bryant Park behind the lions at the NYPL.
+# Distance from pickup to Grand Central can help with removing outliers.
+grand_central_nyc = 40.752, -73.978
+
+
 class Etl:
     """Extract, transform, and load Kaggle taxi data into a SQLite trip table."""
 
@@ -101,11 +107,6 @@ class Etl:
         df = df.drop(columns=cols)
         return pd.concat([df, t], axis=1)
 
-    # This is very near both the median pickup and median dropoff point,
-    # Bryant Park behind the lions at the NYPL.
-    # Distance from pickup to Grand Central can help with removing outliers.
-    grand_central_nyc = 40.752, -73.978
-
     @classmethod
     def _distance(cls, row) -> float:
         from_ = row.pickup_latitude, row.pickup_longitude
@@ -150,7 +151,7 @@ class Etl:
 
         d = dict(
             db_file=self.engine.url.database,
-            grand_central_nyc=self.grand_central_nyc,
+            grand_central_nyc=grand_central_nyc,
             service_radius=self.SERVICE_RADIUS,
             trip_count=len(df),
             ul=ul,
@@ -159,20 +160,22 @@ class Etl:
         yaml = YAML()
         yaml.dump(d, Path(out_file))
 
+    @staticmethod
     def _read_yaml_bbox(
-        self, in_file=CONFIG_FILE
+        in_file=CONFIG_FILE,
     ) -> tuple[tuple[float, float], tuple[float, float]]:
         d = YAML().load(Path(in_file))
         return d["ul"], d["lr"]
 
     @staticmethod
     def _get_bbox(
-        df: pd.DataFrame, prec: int = 3  # decimal places of precision
+        df: pd.DataFrame, precision: int = 3  # decimal places of precision
     ) -> tuple[tuple[float, float], tuple[float, float]]:
-        n_lat = round(max(df.pickup_latitude.max(), df.dropoff_latitude.max()), prec)
-        s_lat = round(min(df.pickup_latitude.min(), df.dropoff_latitude.min()), prec)
-        w_lng = round(min(df.pickup_longitude.min(), df.dropoff_longitude.min()), prec)
-        e_lng = round(max(df.pickup_longitude.max(), df.dropoff_longitude.max()), prec)
+        dec = precision  # need a short identifier, to prevent line wrap
+        n_lat = round(max(df.pickup_latitude.max(), df.dropoff_latitude.max()), dec)
+        s_lat = round(min(df.pickup_latitude.min(), df.dropoff_latitude.min()), dec)
+        w_lng = round(min(df.pickup_longitude.min(), df.dropoff_longitude.min()), dec)
+        e_lng = round(max(df.pickup_longitude.max(), df.dropoff_longitude.max()), dec)
         up, lf = map(float, (n_lat, w_lng))
         lw, rt = map(float, (s_lat, e_lng))
         ul = up, lf
