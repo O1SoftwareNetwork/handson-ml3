@@ -39,7 +39,7 @@ class Etl:
         df = self._discard_unhelpful_columns(df)
         df["distance"] = 0.0
         self._find_distance(df)  # This costs 6 minutes for 1.46 M rows (4200 row/sec)
-        self.discard_outlier_rows(df)
+        discard_outlier_rows(df)
 
         one_second = "1s"  # trim meaningless milliseconds from observations
         for col in date_cols:
@@ -79,20 +79,6 @@ class Etl:
     """
     )
 
-    @staticmethod
-    def _round(df: pd.DataFrame, precision: int = 4) -> pd.DataFrame:
-        cols = [
-            "pickup_longitude",
-            "pickup_latitude",
-            "dropoff_longitude",
-            "dropoff_latitude",
-        ]
-        t = pd.DataFrame()
-        for col in cols:
-            t[col] = df[col].round(precision)
-        df = df.drop(columns=cols)
-        return pd.concat([df, t], axis=1)
-
     @classmethod
     def _distance(cls, row: pd.Series) -> float:
         from_ = row.pickup_latitude, row.pickup_longitude
@@ -110,29 +96,6 @@ class Etl:
     # SERVICE_RADIUS = 60_000  # 37 miles
     SERVICE_RADIUS = 150_000  # 93 miles
 
-    def discard_outlier_rows(self, df: pd.DataFrame) -> pd.DataFrame:
-        FOUR_HOURS = 4 * 60 * 60  # Somewhat commonly we see 86400 second "trips".
-        long_trips = self._round(df[df.trip_duration >= FOUR_HOURS])
-        long_trips.to_csv(self.folder / "outlier_long_trips.csv", index=False)
-        # Discard trips where cabbie forgot to turn off the meter.
-        df = df[df.trip_duration < FOUR_HOURS]
-
-        ul, lr = self._read_yaml_bbox()
-        df = df[
-            True
-            & (lr[0] < df.pickup_latitude)
-            & (df.pickup_latitude < ul[0])
-            & (ul[1] < df.pickup_longitude)
-            & (df.pickup_longitude < lr[1])
-            & (lr[0] < df.dropoff_latitude)
-            & (df.dropoff_latitude < ul[0])
-            & (ul[1] < df.dropoff_longitude)
-            & (df.dropoff_longitude < lr[1])
-        ]
-
-        assert df.passenger_count.max() <= 9
-        return df
-
     def _write_yaml_bbox(self, df: pd.DataFrame, out_file: Path = CONFIG_FILE) -> None:
         ul, lr = self._get_bbox(df)
 
@@ -148,13 +111,6 @@ class Etl:
         yaml.dump(d, Path(out_file))
 
     @staticmethod
-    def _read_yaml_bbox(
-        in_file: Path = CONFIG_FILE,
-    ) -> tuple[tuple[float, float], tuple[float, float]]:
-        d = YAML().load(Path(in_file))
-        return d["ul"], d["lr"]
-
-    @staticmethod
     def _get_bbox(
         df: pd.DataFrame, precision: int = 3  # decimal places of precision
     ) -> tuple[tuple[float, float], tuple[float, float]]:
@@ -168,6 +124,51 @@ class Etl:
         ul = up, lf
         lr = lw, rt
         return ul, lr
+
+
+def _round(df: pd.DataFrame, precision: int = 4) -> pd.DataFrame:
+    cols = [
+        "pickup_longitude",
+        "pickup_latitude",
+        "dropoff_longitude",
+        "dropoff_latitude",
+    ]
+    t = pd.DataFrame()
+    for col in cols:
+        t[col] = df[col].round(precision)
+    df = df.drop(columns=cols)
+    return pd.concat([df, t], axis=1)
+
+
+def _read_yaml_bbox(
+    in_file: Path = CONFIG_FILE,
+) -> tuple[tuple[float, float], tuple[float, float]]:
+    d = YAML().load(Path(in_file))
+    return d["ul"], d["lr"]
+
+
+def discard_outlier_rows(df: pd.DataFrame) -> pd.DataFrame:
+    FOUR_HOURS = 4 * 60 * 60  # Somewhat commonly we see 86400 second "trips".
+    long_trips = _round(df[df.trip_duration >= FOUR_HOURS])
+    long_trips.to_csv(temp_dir() / "constant/outlier_long_trips.csv", index=False)
+    # Discard trips where cabbie forgot to turn off the meter.
+    df = df[df.trip_duration < FOUR_HOURS]
+
+    ul, lr = _read_yaml_bbox()
+    df = df[
+        True
+        & (lr[0] < df.pickup_latitude)
+        & (df.pickup_latitude < ul[0])
+        & (ul[1] < df.pickup_longitude)
+        & (df.pickup_longitude < lr[1])
+        & (lr[0] < df.dropoff_latitude)
+        & (df.dropoff_latitude < ul[0])
+        & (ul[1] < df.dropoff_longitude)
+        & (df.dropoff_longitude < lr[1])
+    ]
+
+    assert df.passenger_count.max() <= 9
+    return df
 
 
 def main(in_csv: Path) -> None:
