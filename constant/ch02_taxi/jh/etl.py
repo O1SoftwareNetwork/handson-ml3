@@ -55,7 +55,7 @@ class Etl:
         # self._write_yaml_bbox(df)
 
     def _discard_unhelpful_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        delayed = self._round(df[df.store_and_fwd_flag == "Y"])
+        delayed = _round(df[df.store_and_fwd_flag == "Y"])
         delayed.to_csv(self.folder / "outlier_delayed.csv", index=False)
 
         df = df.drop(columns=["vendor_id"])  # TPEP: Creative Mobile or Verifone

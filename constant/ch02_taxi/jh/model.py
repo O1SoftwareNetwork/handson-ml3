@@ -7,27 +7,37 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
 
 from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET, discard_outlier_rows
 from constant.ch02_taxi.jh.features import add_pickup_dow_hour
 from constant.util.path import temp_dir
 
 
-def linear_model() -> None:
+def _get_df() -> pd.DataFrame:
     in_file: Path = COMPRESSED_DATASET
     df = pd.read_parquet(in_file)
     df = discard_outlier_rows(df)
     df = add_pickup_dow_hour(df)
+    return df
 
+
+def linear_model() -> None:
+    df = _get_df()
     model = LinearRegression()
+
     model.fit(np.array(df.distance).reshape(-1, 1), df.elapsed)
-    print(f"model.coef_: {model.coef_}")
-    print(f"model.intercept_: {model.intercept_}")
-    print(f"model.score(): {model.score(df[['distance']], df['elapsed'])}")
+
+    m_per_s = 1 / model.coef_[0]
+    print(f"{m_per_s:.1f} m/s")
+    assert model.intercept_ > 0  # Sigh! Ideally it would go through the origin.
+    print("model.score():", model.score(df[["distance"]], df.elapsed))
     sns.scatterplot(
         data=df,
         x="distance",
         y="elapsed",
+        alpha=0.2,
     )
     # now plot the regression line
     xs = np.linspace(0, 40_000, 100)
@@ -38,5 +48,25 @@ def linear_model() -> None:
     plt.show()
 
 
+def tree_model() -> None:
+    df = _get_df()
+    df = df[df.elapsed <= 3600]
+    df = df[df.distance <= 30_000][:1_000]
+    model = XGBClassifier()
+    y_train = LabelEncoder().fit_transform(df.elapsed)
+    model.fit(df[["distance"]], y_train)
+
+    p = pd.DataFrame({"distance": df.distance, "actual_elapsed": df.elapsed})
+    sns.scatterplot(data=p, x="distance", y="actual_elapsed", alpha=0.3, color="red")
+
+    df = pd.DataFrame({"distance": np.linspace(0, 30_000, 100)})
+    p = pd.DataFrame(
+        {"distance": df.distance, "elapsed": model.predict(df[["distance"]])}
+    )
+    sns.scatterplot(data=p, x="distance", y="elapsed", alpha=0.2, color="purple")
+    plt.show()
+
+
 if __name__ == "__main__":
-    linear_model()
+    tree_model()
+    # linear_model()
