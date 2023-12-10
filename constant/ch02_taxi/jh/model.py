@@ -47,21 +47,24 @@ def linear_model() -> None:
     plt.show()
 
 
-def tree_model() -> None:
+def tree_model(num_rows: int = 10_000) -> None:
     df = _get_df()
     df = df[df.elapsed <= 3600]
-    df = df[df.distance <= 30_000][:1_000]
+    df = df[df.distance <= 30_000][: 2 * num_rows]
     model = XGBRegressor()
-    y_train = df.elapsed
+    y_train = df.elapsed[:num_rows]
     informative_cols = ["distance", "dow", "hour"]
     print("fitting...")
 
-    model.fit(np.array(df[informative_cols]), y_train)
+    model.fit(np.array(df[informative_cols][:num_rows]), y_train)
 
     p = pd.DataFrame({"distance": df.distance, "actual_elapsed": df.elapsed})
     sns.scatterplot(data=p, x="distance", y="actual_elapsed", alpha=0.3, color="red")
 
     print(len(df.distance))
+    df = df[num_rows:]
+    print(df[informative_cols])
+    print(model.predict(df[informative_cols]))
     p = pd.DataFrame(
         {
             "distance": df.distance,
