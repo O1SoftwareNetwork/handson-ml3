@@ -7,7 +7,6 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBRegressor
 
 from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET, discard_outlier_rows
@@ -54,14 +53,20 @@ def tree_model() -> None:
     df = df[df.distance <= 30_000][:1_000]
     model = XGBRegressor()
     y_train = df.elapsed
-    model.fit(df[["distance"]], y_train)
+    informative_cols = ["distance", "dow", "hour"]
+    print("fitting...")
+
+    model.fit(np.array(df[informative_cols]), y_train)
 
     p = pd.DataFrame({"distance": df.distance, "actual_elapsed": df.elapsed})
     sns.scatterplot(data=p, x="distance", y="actual_elapsed", alpha=0.3, color="red")
 
-    df = pd.DataFrame({"distance": np.linspace(0, 30_000, 100)})
+    print(len(df.distance))
     p = pd.DataFrame(
-        {"distance": df.distance, "elapsed": model.predict(df[["distance"]])}
+        {
+            "distance": df.distance,
+            "elapsed": model.predict(df[informative_cols]),
+        }
     )
     sns.scatterplot(data=p, x="distance", y="elapsed", alpha=0.8, color="purple")
     plt.show()
