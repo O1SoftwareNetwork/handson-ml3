@@ -46,6 +46,7 @@ dependencies:
     - beartype >= 0.16.4
     - black[jupyter] >= 23.11.0
     - cartopy >= 0.22.0
+    - geopandas >= 0.14.1
     - geopy >= 2.4.1
     - hypothesis >= 6.88.4
     - isort >= 5.12.0

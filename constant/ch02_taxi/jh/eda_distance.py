@@ -6,57 +6,53 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from beartype import beartype
+from matplotlib.axes import Axes
 
 from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET, discard_outlier_rows
 from constant.ch02_taxi.jh.features import add_pickup_dow_hour
 
+MAX_ELAPSED = 125 * 60  # 125 minutes, ~ two hours
 
-@beartype
-def eda_distance(df: pd.DataFrame, num_rows: int = 100_000) -> None:
+
+def eda_distance(df: pd.DataFrame, ax: Axes, num_rows: int = 100_000) -> None:
     df = discard_outlier_rows(df)[:num_rows]
     df = add_pickup_dow_hour(df)
-    show_distance_vs_time(df)
 
-
-@beartype
-def show_distance_vs_time(df: pd.DataFrame) -> None:
-    fig, _ = plt.subplots()
-    assert fig
-    sns.scatterplot(
-        data=df,
+    sns.regplot(
+        data=df[df.elapsed > 60],
         x="distance",
         y="elapsed",
+        ax=ax,
+        line_kws=dict(color="purple"),
     )
-    plt.show()
+    ax.set_ylim(0, MAX_ELAPSED)
 
 
-@beartype
-def eda_min_time(df: pd.DataFrame) -> None:
+def eda_min_time(df: pd.DataFrame, ax: Axes) -> None:
     df["distance_km"] = (df.distance / 1000).apply(int)
-    min_time = df.groupby("distance_km").elapsed.min().reset_index()
-    show_min_time(min_time)
+    df = df.groupby("distance_km").elapsed.min().reset_index()
 
-
-@beartype
-def show_min_time(df: pd.DataFrame) -> None:
     # 13.3 m/s is 30 mph
     sns.regplot(
         data=df,
         x="distance_km",
         y="elapsed",
+        ax=ax,
+        line_kws=dict(color="purple"),
     )
+    ax.set_ylim(0, MAX_ELAPSED)
+    plt.tight_layout()
     plt.show()
 
 
-@beartype
 def main(in_file: Path = COMPRESSED_DATASET, num_rows: int = 100_000) -> None:
     df = pd.read_parquet(in_file)[:num_rows]
     df = discard_outlier_rows(df)
     df = add_pickup_dow_hour(df)
+    _, axes = plt.subplots(1, 2)
 
-    eda_min_time(df)
-    # eda_distance(pd.read_parquet(in_file))
+    eda_distance(df, axes[0])
+    eda_min_time(df, axes[1])
 
 
 if __name__ == "__main__":
