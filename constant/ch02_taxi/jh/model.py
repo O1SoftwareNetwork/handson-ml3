@@ -61,10 +61,10 @@ def tree_model(num_rows: int = 10_000) -> None:
     p = pd.DataFrame({"distance": df.distance, "actual_elapsed": df.elapsed})
     sns.scatterplot(data=p, x="distance", y="actual_elapsed", alpha=0.3, color="red")
 
-    print(len(df.distance))
-    df = df[num_rows:]
-    print(df[informative_cols])
-    print(model.predict(df[informative_cols]))
+    assert 9_929 == len(df.distance)
+    df = df[:num_rows]
+    print("\n")
+    print(pd.DataFrame({"elapsed": model.predict(df[informative_cols])}))
     p = pd.DataFrame(
         {
             "distance": df.distance,
