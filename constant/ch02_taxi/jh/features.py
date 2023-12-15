@@ -13,6 +13,12 @@ warnings.filterwarnings("ignore", message="Conversion of an array with ndim > 0"
 wgs84: Geodesic = Geodesic()
 
 
+# This is very near both the median pickup and median dropoff point,
+# Bryant Park behind the lions at the NYPL.
+# Distance from pickup to Grand Central can help with removing outliers.
+grand_central_nyc = 40.752, -73.978
+
+
 def add_pickup_dow_hour(df: pd.DataFrame) -> pd.DataFrame:
     """Add day-of-week and hour-of-day features."""
     df.loc[:, ("dow",)] = df["pickup_datetime"].copy().dt.dayofweek  # Monday=0

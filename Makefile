@@ -7,8 +7,11 @@ lint:
 	isort constant/
 	ruff .
 
+COVERAGE = --cov --cov-report=term-missing
+
 test:
 	python -W error -m unittest constant/*/*/*_test.py
+	pytest $(COVERAGE) constant/
 
 MYPY = mypy --ignore-missing-imports --no-namespace-packages
 
