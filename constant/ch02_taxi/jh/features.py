@@ -4,9 +4,12 @@
 
 import warnings
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 from cartopy.geodesic import Geodesic
+
+from constant.util.path import temp_dir
 
 warnings.filterwarnings("ignore", message="Conversion of an array with ndim > 0")
 
@@ -50,3 +53,25 @@ def azimuth(
     end_lng_lat = np.array(list(reversed(end_lat_lng)))
     meters, degrees, _ = map(int, wgs84.inverse(begin_lng_lat, end_lng_lat)[0])
     return degrees, meters
+
+
+_tlc_zones = gpd.read_file(temp_dir() / "taxi_zones.shp")
+
+
+def _tlc_zone(row: pd.Series) -> int:
+    """Return the Taxi & Limousine Commission zone for the dropoff location."""
+    # lat = row.dropoff_latitude
+    # lng = row.dropoff_longitude
+    pt = row.pickup_pt
+    m = _tlc_zones.contains(pt)
+    print(m[m])
+    return _tlc_zones.contains(pt).idxmax()
+
+
+def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
+    df["pickup_pt"] = gpd.points_from_xy(df.pickup_longitude, df.pickup_latitude)
+    df["dropoff_pt"] = gpd.points_from_xy(df.dropoff_longitude, df.dropoff_latitude)
+
+    df["zone"] = df.apply(lambda row: _tlc_zone(row), axis=1)
+    print(df.zone)
+    return df
