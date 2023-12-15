@@ -7,6 +7,9 @@ lint:
 	isort constant/
 	ruff .
 
+test:
+	python -W error -m unittest constant/*/*/*_test.py
+
 MYPY = mypy --ignore-missing-imports --no-namespace-packages
 
 type: typecheck

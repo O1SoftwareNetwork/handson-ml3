@@ -2,7 +2,6 @@
 # Copyright 2023 O1 Software Network. MIT licensed.
 """Feature augmentation."""
 
-import unittest
 import warnings
 
 import numpy as np
@@ -12,12 +11,6 @@ from cartopy.geodesic import Geodesic
 warnings.filterwarnings("ignore", message="Conversion of an array with ndim > 0")
 
 wgs84: Geodesic = Geodesic()
-
-
-# This is very near both the median pickup and median dropoff point,
-# Bryant Park behind the lions at the NYPL.
-# Distance from pickup to Grand Central can help with removing outliers.
-grand_central_nyc = 40.752, -73.978
 
 
 def add_pickup_dow_hour(df: pd.DataFrame) -> pd.DataFrame:
@@ -51,11 +44,3 @@ def azimuth(
     end_lng_lat = np.array(list(reversed(end_lat_lng)))
     meters, degrees, _ = map(int, wgs84.inverse(begin_lng_lat, end_lng_lat)[0])
     return degrees, meters
-
-
-class FeaturesTest(unittest.TestCase):
-    logan_boston = 42.363, -71.006
-
-    def test_azimuth(self) -> None:
-        angle, distance = map(int, azimuth(grand_central_nyc, self.logan_boston))
-        self.assertEqual((53, 305_719), (angle, distance))
