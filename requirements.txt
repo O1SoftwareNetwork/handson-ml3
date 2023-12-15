@@ -89,3 +89,31 @@ pydot~=1.4.2
 
 # Optional: statsmodels is only used in chapter 15 for time series analysis
 statsmodels~=0.14.0
+
+# deps implied by the envionment.yml file:
+box2d-py~=2.3
+beartype==0.16.4
+cartopy==0.22.0
+geopandas==0.14.1
+geopy==2.4.1
+hypothesis==6.91.0
+isort==5.12.0
+kaggle==1.5.16
+matplotlib_stubs==0.2.0
+mypy==1.7.1
+nbstripout==0.6.1
+pandas-stubs==2.0.3.230814
+pre-commit==3.5.0
+pyarrow==14.0.1
+pytest-cov==4.1.0
+ruff==0.1.7
+sqlalchemy_stubs==0.4
+streamlit==1.29.0
+sweetviz==2.3.1
+typer==0.9.0
+types-openpyxl==3.1.0.32
+types-seaborn==0.13.0.6
+uszipcode==1.0.1
+watchdog==3.0.0
+widgetsnbextension==4.0.9
+ydata-profiling==4.6.3
