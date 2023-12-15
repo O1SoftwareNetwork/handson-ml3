@@ -19,8 +19,19 @@ warnings.filterwarnings(
 )
 
 
+def _tight_bbox(df: pd.DataFrame) -> pd.DataFrame:
+    return df[
+        True
+        & (-74.05 < df.dropoff_longitude)
+        & (df.dropoff_longitude < -73.8)
+        & (40.7 < df.dropoff_latitude)
+        & (df.dropoff_latitude < 40.85)
+    ]
+
+
 def eda_time(df: pd.DataFrame, num_rows: int = 100_000) -> None:
-    df = add_pickup_dow_hour(df[:num_rows])
+    df = _tight_bbox(df)[:num_rows]
+    df = add_pickup_dow_hour(df)
     show_dropoff_locations(df)
 
 
@@ -31,7 +42,7 @@ def show_dropoff_locations(df: pd.DataFrame) -> None:
         x="dropoff_longitude",
         y="dropoff_latitude",
         size=2,
-        alpha=0.02,
+        alpha=0.04,
         color="purple",
     )
     st.write(fig)
