@@ -29,22 +29,27 @@ def _tight_bbox(df: pd.DataFrame) -> pd.DataFrame:
     ]
 
 
-def eda_time(df: pd.DataFrame, num_rows: int = 100_000) -> None:
+def eda_time(df: pd.DataFrame, num_rows: int = 200_000) -> None:
     df = _tight_bbox(df)[:num_rows]
     df = add_pickup_dow_hour(df)
     show_dropoff_locations(df)
 
 
 def show_dropoff_locations(df: pd.DataFrame) -> None:
-    fig, _ = plt.subplots()
+    display_hour = st.slider("hour", 0, 23, 6)
+    display_df = df[df.hour == display_hour]
+
+    fig, ax = plt.subplots()
     sns.scatterplot(
-        data=df,
+        data=display_df,
         x="dropoff_longitude",
         y="dropoff_latitude",
         size=2,
-        alpha=0.04,
+        alpha=0.08,
         color="purple",
     )
+    ax.set_xlim(df.dropoff_longitude.min(), df.dropoff_longitude.max())
+    ax.set_ylim(df.dropoff_latitude.min(), df.dropoff_latitude.max())
     st.write(fig)
 
 
