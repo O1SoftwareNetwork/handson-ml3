@@ -47,13 +47,13 @@ class FeaturesTest(unittest.TestCase):
 
     def test_tlc_zones(self) -> None:
         df = add_tlc_zone(self.df)
-        self.assertEqual("Manhattan", ", ".join(df.borough.unique()))
+        self.assertEqual("Manhattan", ", ".join(df.pickup_borough.unique()))
 
-        base = 3_000  # The first few thousand rows omit the Bronx; SI is rare.
+        base = 3_000  # The first few thousand rows omit the Bronx.
         num_rows = 1_000
         df = pd.read_parquet(COMPRESSED_DATASET)[base : base + num_rows]
         df = add_tlc_zone(df)
-        self.assertEqual(
-            "Bronx, Brooklyn, EWR, Manhattan, Queens",
-            ", ".join(sorted(df.borough.unique())),
-        )
+
+        boroughs = "Bronx, Brooklyn, EWR, Manhattan, Queens"  # Staten Island is rare.
+        self.assertEqual(boroughs, ", ".join(sorted(df.pickup_borough.unique())))
+        self.assertEqual(boroughs, ", ".join(sorted(df.dropoff_borough.unique())))
