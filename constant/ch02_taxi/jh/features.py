@@ -3,9 +3,7 @@
 """Feature augmentation."""
 
 import warnings
-from collections import namedtuple
 
-import dbf
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -57,23 +55,7 @@ def azimuth(
     return degrees, meters
 
 
-TLCZone = namedtuple("TLCZone", "locationid borough zone")
-
-
-def _unused_get_tlc_names():
-    # FieldnameList(['OBJECTID', 'SHAPE_LENG', 'SHAPE_AREA', 'ZONE', 'LOCATIONID', 'BOROUGH'])
-    tbl = dbf.Table("/tmp/taxi_zones.dbf")
-    assert 6 == tbl.field_count
-    tbl.open()
-    for row in tbl.query("SELECT *  ORDER BY locationid"):
-        i = int(row.locationid)
-        borough, zone = map(str.rstrip, (row.borough, row.zone))
-        yield i, TLCZone(i, borough, zone)
-    tbl.close()
-
-
 _tlc_zone_shapes = gpd.read_file(temp_dir() / "taxi_zones.shp")
-_tlc_zones = dict(_get_tlc_names())
 
 
 def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
@@ -83,7 +65,9 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
     gdf = gpd.GeoDataFrame(df).set_geometry("pickup_pt")
     joined = gdf.sjoin_nearest(_tlc_zone_shapes, how="left")
     df["locationid"] = joined.LocationID
+    df['borough'] = joined.borough
     df["zone"] = joined.zone
-    print(df.zone)
-    breakpoint()
     return df
+
+
+COMPRESSED_DATASET = temp_dir() / "constant/trip.parquet"

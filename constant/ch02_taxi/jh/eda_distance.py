@@ -8,8 +8,8 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 
-from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET, discard_outlier_rows
-from constant.ch02_taxi.jh.features import add_pickup_dow_hour
+from constant.ch02_taxi.jh.etl import discard_outlier_rows
+from constant.ch02_taxi.jh.features import COMPRESSED_DATASET, add_pickup_dow_hour
 
 MAX_ELAPSED = 125 * 60  # 125 minutes, ~ two hours
 

@@ -17,7 +17,6 @@ from constant.util.path import constant, temp_dir
 from constant.util.timing import timed
 
 CONFIG_FILE = constant() / "ch02_taxi/jh/taxi.yml"
-COMPRESSED_DATASET = temp_dir() / "constant/trip.parquet"
 
 
 class Etl:

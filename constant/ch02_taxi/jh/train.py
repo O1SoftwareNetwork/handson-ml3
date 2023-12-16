@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 from beartype import beartype
 
-from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET
+from constant.ch02_taxi.jh.features import COMPRESSED_DATASET
 
 
 @beartype

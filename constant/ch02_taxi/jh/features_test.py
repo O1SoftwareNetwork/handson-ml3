@@ -6,6 +6,7 @@ import unittest
 import pandas as pd
 
 from constant.ch02_taxi.jh.features import (
+    COMPRESSED_DATASET,
     add_direction,
     add_pickup_dow_hour,
     add_tlc_zone,
@@ -46,4 +47,12 @@ class FeaturesTest(unittest.TestCase):
 
     def test_tlc_zones(self) -> None:
         df = add_tlc_zone(self.df)
-        print(df)
+        self.assertEqual("Staten Island", ", ".join(df.borough.unique()))
+
+        num_rows = 1_000
+        df = pd.read_parquet(COMPRESSED_DATASET)[:num_rows]
+        df = add_tlc_zone(df)
+        # print(df.borough)
+        # print(df.borough.unique())
+        self.assertEqual("Staten Island", ", ".join(df.borough.unique()))
+        # breakpoint()

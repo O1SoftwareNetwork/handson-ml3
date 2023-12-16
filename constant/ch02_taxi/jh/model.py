@@ -9,8 +9,8 @@ from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 from xgboost import XGBRegressor
 
-from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET, discard_outlier_rows
-from constant.ch02_taxi.jh.features import add_pickup_dow_hour
+from constant.ch02_taxi.jh.etl import discard_outlier_rows
+from constant.ch02_taxi.jh.features import COMPRESSED_DATASET, add_pickup_dow_hour
 from constant.util.path import temp_dir
 
 

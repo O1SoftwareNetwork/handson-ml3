@@ -10,8 +10,7 @@ import seaborn as sns
 import streamlit as st
 from beartype import beartype
 
-from constant.ch02_taxi.jh.etl import COMPRESSED_DATASET
-from constant.ch02_taxi.jh.features import add_pickup_dow_hour
+from constant.ch02_taxi.jh.features import COMPRESSED_DATASET, add_pickup_dow_hour
 
 warnings.filterwarnings(
     "ignore",
