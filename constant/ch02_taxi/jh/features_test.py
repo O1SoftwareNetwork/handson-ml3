@@ -43,16 +43,17 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(4 * 3600, df.elapsed[0])
 
     def test_constant(self) -> None:
-        self.assertEqual('constant', constant().name)
+        self.assertEqual("constant", constant().name)
 
     def test_tlc_zones(self) -> None:
         df = add_tlc_zone(self.df)
-        self.assertEqual("Staten Island", ", ".join(df.borough.unique()))
+        self.assertEqual("Manhattan", ", ".join(df.borough.unique()))
 
+        base = 3_000  # The first few thousand rows omit the Bronx; SI is rare.
         num_rows = 1_000
-        df = pd.read_parquet(COMPRESSED_DATASET)[:num_rows]
+        df = pd.read_parquet(COMPRESSED_DATASET)[base : base + num_rows]
         df = add_tlc_zone(df)
-        # print(df.borough)
-        # print(df.borough.unique())
-        self.assertEqual("Staten Island", ", ".join(df.borough.unique()))
-        # breakpoint()
+        self.assertEqual(
+            "Bronx, Brooklyn, EWR, Manhattan, Queens",
+            ", ".join(sorted(df.borough.unique())),
+        )

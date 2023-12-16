@@ -13,8 +13,10 @@ from constant.util.path import temp_dir
 
 warnings.filterwarnings("ignore", message="Conversion of an array with ndim > 0")
 
-wgs84: Geodesic = Geodesic()
 
+COMPRESSED_DATASET = temp_dir() / "constant/trip.parquet"
+
+wgs84: Geodesic = Geodesic()
 
 # This is very near both the median pickup and median dropoff point,
 # Bryant Park behind the lions at the NYPL.
@@ -55,19 +57,24 @@ def azimuth(
     return degrees, meters
 
 
-_tlc_zone_shapes = gpd.read_file(temp_dir() / "taxi_zones.shp")
+# wgs84:
+_tlc_zone_shapes = gpd.read_file(temp_dir() / "taxi_zones.zip").to_crs("EPSG:2263")
 
 
 def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
+    wgs_84 = "EPSG:4326"
     df["pickup_pt"] = gpd.points_from_xy(df.pickup_longitude, df.pickup_latitude)
-    df["dropoff_pt"] = gpd.points_from_xy(df.dropoff_longitude, df.dropoff_latitude)
+    gdf = gpd.GeoDataFrame(df, geometry="pickup_pt", crs=wgs_84).to_crs(epsg=2263)
+    assert "EPSG:2263" == gdf.crs, gdf.crs  # https://epsg.io/2263 NAD83 / New York L.I.
+    assert "EPSG:2263" == _tlc_zone_shapes.crs, _tlc_zone_shapes.crs
+    assert gdf.crs.is_projected
+    assert _tlc_zone_shapes.crs.is_projected
 
-    gdf = gpd.GeoDataFrame(df).set_geometry("pickup_pt")
-    joined = gdf.sjoin_nearest(_tlc_zone_shapes, how="left")
+    joined = gdf.sjoin_nearest(
+        _tlc_zone_shapes, how="left", distance_col="join_distance"
+    ).to_crs(epsg=2263)
+
     df["locationid"] = joined.LocationID
-    df['borough'] = joined.borough
+    df["borough"] = joined.borough
     df["zone"] = joined.zone
     return df
-
-
-COMPRESSED_DATASET = temp_dir() / "constant/trip.parquet"
