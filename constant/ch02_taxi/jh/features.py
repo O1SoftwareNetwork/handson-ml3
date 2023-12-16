@@ -3,7 +3,9 @@
 """Feature augmentation."""
 
 import warnings
+from collections import namedtuple
 
+import dbf
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -55,23 +57,33 @@ def azimuth(
     return degrees, meters
 
 
-_tlc_zones = gpd.read_file(temp_dir() / "taxi_zones.shp")
+TLCZone = namedtuple("TLCZone", "locationid borough zone")
 
 
-def _tlc_zone(row: pd.Series) -> int:
-    """Return the Taxi & Limousine Commission zone for the dropoff location."""
-    # lat = row.dropoff_latitude
-    # lng = row.dropoff_longitude
-    pt = row.pickup_pt
-    m = _tlc_zones.contains(pt)
-    print(m[m])
-    return _tlc_zones.contains(pt).idxmax()
+def _unused_get_tlc_names():
+    # FieldnameList(['OBJECTID', 'SHAPE_LENG', 'SHAPE_AREA', 'ZONE', 'LOCATIONID', 'BOROUGH'])
+    tbl = dbf.Table("/tmp/taxi_zones.dbf")
+    assert 6 == tbl.field_count
+    tbl.open()
+    for row in tbl.query("SELECT *  ORDER BY locationid"):
+        i = int(row.locationid)
+        borough, zone = map(str.rstrip, (row.borough, row.zone))
+        yield i, TLCZone(i, borough, zone)
+    tbl.close()
+
+
+_tlc_zone_shapes = gpd.read_file(temp_dir() / "taxi_zones.shp")
+_tlc_zones = dict(_get_tlc_names())
 
 
 def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
     df["pickup_pt"] = gpd.points_from_xy(df.pickup_longitude, df.pickup_latitude)
     df["dropoff_pt"] = gpd.points_from_xy(df.dropoff_longitude, df.dropoff_latitude)
 
-    df["zone"] = df.apply(lambda row: _tlc_zone(row), axis=1)
+    gdf = gpd.GeoDataFrame(df).set_geometry("pickup_pt")
+    joined = gdf.sjoin_nearest(_tlc_zone_shapes, how="left")
+    df["locationid"] = joined.LocationID
+    df["zone"] = joined.zone
     print(df.zone)
+    breakpoint()
     return df
