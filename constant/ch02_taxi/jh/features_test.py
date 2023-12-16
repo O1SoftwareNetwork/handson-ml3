@@ -3,6 +3,7 @@
 
 import unittest
 
+import duckdb
 import pandas as pd
 
 from constant.ch02_taxi.jh.features import (
@@ -14,6 +15,7 @@ from constant.ch02_taxi.jh.features import (
     grand_central_nyc,
 )
 from constant.util.path import constant
+from constant.util.timing import timed
 
 
 class FeaturesTest(unittest.TestCase):
@@ -44,6 +46,13 @@ class FeaturesTest(unittest.TestCase):
 
     def test_constant(self) -> None:
         self.assertEqual("constant", constant().name)
+
+    @timed
+    def test_read_prefix_rows_with_duckdb(self, n_rows=10) -> None:
+        """Demonstrates how to rapidly read first few rows from parquet, ignoring the rest."""
+        select = f'SELECT * FROM "{COMPRESSED_DATASET}" OFFSET {n_rows} LIMIT {n_rows}'
+        df = duckdb.query(select).df()
+        self.assertEqual(n_rows, len(df))
 
     def test_tlc_zones(self) -> None:
         df = add_tlc_zone(self.df)
