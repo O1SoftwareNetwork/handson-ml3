@@ -12,6 +12,7 @@ from constant.ch02_taxi.jh.features import (
     add_pickup_dow_hour,
     add_tlc_zone,
     azimuth,
+    get_borough_matrix,
     grand_central_nyc,
 )
 from constant.util.path import constant
@@ -66,3 +67,11 @@ class FeaturesTest(unittest.TestCase):
         boroughs = "Bronx, Brooklyn, EWR, Manhattan, Queens"  # Staten Island is rare.
         self.assertEqual(boroughs, ", ".join(sorted(df.pickup_borough.unique())))
         self.assertEqual(boroughs, ", ".join(sorted(df.dropoff_borough.unique())))
+
+        #
+
+        c = get_borough_matrix(df)
+        self.assertEqual(5, len(c))
+        self.assertEqual([928, 50, 20, 1, 1], sorted(c.values))
+
+    # def test_get_borough_matrix(self) -> None:

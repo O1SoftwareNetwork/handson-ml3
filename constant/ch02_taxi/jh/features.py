@@ -3,6 +3,8 @@
 """Feature augmentation."""
 
 import warnings
+from collections import Counter
+from typing import Generator
 
 import geopandas as gpd
 import numpy as np
@@ -88,3 +90,13 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
     df["dropoff_borough"] = joined_dr.borough
     df["dropoff_zone"] = joined_dr.zone
     return df
+
+
+def _get_borough_pairs(df: pd.DataFrame) -> Generator[tuple[str, str], None, None]:
+    for _, row in df.iterrows():
+        yield (row.pickup_borough, row.dropoff_borough)
+
+
+def get_borough_matrix(df: pd.DataFrame) -> Counter:
+    c = Counter(sorted(_get_borough_pairs(df)))
+    return c
