@@ -2,6 +2,7 @@
 # Copyright 2023 O1 Software Network. MIT licensed.
 
 import unittest
+from operator import itemgetter
 
 import duckdb
 import pandas as pd
@@ -16,7 +17,6 @@ from constant.ch02_taxi.jh.features import (
     grand_central_nyc,
 )
 from constant.util.path import constant
-from constant.util.timing import timed
 
 
 class FeaturesTest(unittest.TestCase):
@@ -48,7 +48,6 @@ class FeaturesTest(unittest.TestCase):
     def test_constant(self) -> None:
         self.assertEqual("constant", constant().name)
 
-    @timed
     def test_read_prefix_rows_with_duckdb(self, n_rows=10) -> None:
         """Demonstrates how to rapidly read first few rows from parquet, ignoring the rest."""
         select = f'SELECT * FROM "{COMPRESSED_DATASET}" OFFSET {n_rows} LIMIT {n_rows}'
@@ -71,7 +70,29 @@ class FeaturesTest(unittest.TestCase):
         #
 
         c = get_borough_matrix(df)
-        self.assertEqual(5, len(c))
-        self.assertEqual([928, 50, 20, 1, 1], sorted(c.values))
+        self.assertEqual(11, len(c))
+        self.assertEqual(
+            [847, 40, 35, 26, 14, 14, 10, 6, 6, 1, 1], sorted(c.values(), reverse=True)
+        )
+        boro_pairs = sorted(c.items(), key=itemgetter(1), reverse=True)
+        self.assertEqual(
+            "Mn → Mn, Mn → Qu, Mn → Bk, Qu → Mn, Bk → Bk, Qu → Qu,"
+            " Qu → Bk, Bk → Mn, Mn → Bx, Bx → Mn, EWR → EWR",
+            ", ".join(map(_format_two_boroughs, boro_pairs)),
+        )
 
     # def test_get_borough_matrix(self) -> None:
+
+
+def _format_two_boroughs(boros_with_count: tuple[tuple[str, str], int]) -> str:
+    abbrev = {
+        "Bronx": "Bx",
+        "Brooklyn": "Bk",
+        "EWR": "EWR",
+        "Manhattan": "Mn",
+        "Queens": "Qu",
+        "Staten Island": "SI",
+    }
+    boro_names, _ = boros_with_count
+    pu, dr = map(abbrev.get, boro_names)
+    return f"{pu} → {dr}"
