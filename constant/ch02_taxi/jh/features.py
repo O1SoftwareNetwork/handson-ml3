@@ -99,5 +99,13 @@ def _get_borough_pairs(df: pd.DataFrame) -> Generator[tuple[str, str], None, Non
 
 
 def get_borough_matrix(df: pd.DataFrame) -> Counter:
-    c = Counter(sorted(_get_borough_pairs(df)))
-    return c
+    return Counter(sorted(_get_borough_pairs(df)))
+
+
+def _get_zone_pairs(df: pd.DataFrame) -> Generator[tuple[str, str], None, None]:
+    for _, row in df.iterrows():
+        yield (row.pickup_zone, row.dropoff_zone)
+
+
+def get_zone_matrix(df: pd.DataFrame) -> Counter:
+    return Counter(sorted(_get_zone_pairs(df)))

@@ -12,7 +12,12 @@ import typer
 from geopy.distance import distance
 from ruamel.yaml import YAML
 
-from constant.ch02_taxi.jh.features import grand_central_nyc
+from constant.ch02_taxi.jh.features import (
+    add_direction,
+    add_pickup_dow_hour,
+    add_tlc_zone,
+    grand_central_nyc,
+)
 from constant.util.path import constant, temp_dir
 from constant.util.timing import timed
 
@@ -38,7 +43,10 @@ class Etl:
         df = self._discard_unhelpful_columns(df)
         df["distance"] = 0.0
         self._find_distance(df)  # This costs 6 minutes for 1.46 M rows (4200 row/sec)
-        discard_outlier_rows(df)
+        df = discard_outlier_rows(df)
+        df = add_direction(df)
+        df = add_pickup_dow_hour(df)
+        df = add_tlc_zone(df)
 
         one_second = "1s"  # trim meaningless milliseconds from observations
         for col in date_cols:

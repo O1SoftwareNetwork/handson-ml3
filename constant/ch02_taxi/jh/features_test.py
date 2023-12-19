@@ -81,8 +81,6 @@ class FeaturesTest(unittest.TestCase):
             ", ".join(map(_format_two_boroughs, boro_pairs)),
         )
 
-    # def test_get_borough_matrix(self) -> None:
-
 
 def _format_two_boroughs(boros_with_count: tuple[tuple[str, str], int]) -> str:
     abbrev = {
