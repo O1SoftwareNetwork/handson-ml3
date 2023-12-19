@@ -29,7 +29,7 @@ class Etl:
 
     def __init__(self, db_file: Path, decorator: Callable[[Any], Any] = timed) -> None:
         self.folder = db_file.parent.resolve()
-        self.engine = sa.create_engine(f"sqlite:///{db_file}")
+        self.engine = sa.create_engine(f"sqlite:///{db_file}", echo=True)
 
         for method_name in dir(self) + dir(Etl):
             attr = getattr(self, method_name)
@@ -54,7 +54,9 @@ class Etl:
 
         with self.engine.begin() as sess:
             sess.execute(sa.text("DROP TABLE  IF EXISTS  trip"))
-            sess.execute(self.ddl)
+            # sess.execute(self.ddl)
+        df = df.drop(columns=["pickup_pt", "dropoff_pt"])
+        print(df)
         df.to_sql("trip", self.engine, if_exists="append", index=False)
 
         df.to_parquet(self.folder / "trip.parquet", index=False)
@@ -81,7 +83,15 @@ class Etl:
         dropoff_longitude  FLOAT,
         dropoff_latitude   FLOAT,
         trip_duration      INTEGER,
-        distance           FLOAT
+        distance           FLOAT,
+        direction          BIGINT,
+        dow                INTEGER,
+        hour               INTEGER,
+        elapsed            FLOAT,
+        pickup_borough     TEXT,
+        pickup_zone        TEXT,
+        dropoff_borough    TEXT,
+        dropoff_zone       TEXT
     )
     """
     )
