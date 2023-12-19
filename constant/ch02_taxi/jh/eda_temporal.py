@@ -4,6 +4,7 @@
 import warnings
 from pathlib import Path
 
+import matplotlib.figure as mpfig
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -38,7 +39,8 @@ def show_dropoff_locations(df: pd.DataFrame) -> None:
     st.write(_plot_fig(df[df.hour == display_hour]))
 
 
-def _plot_fig(df: pd.DataFrame) -> plt.Figure:
+@st.cache_data
+def _plot_fig(df: pd.DataFrame) -> mpfig.Figure:
     fig, ax = plt.subplots()
     sns.scatterplot(
         data=df,
