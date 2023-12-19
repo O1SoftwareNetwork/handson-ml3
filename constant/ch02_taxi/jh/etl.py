@@ -46,8 +46,7 @@ class Etl:
         df = discard_outlier_rows(df)
         df = add_direction(df)
         df = add_pickup_dow_hour(df)
-        df.to_parquet(self.folder / "trip.parquet", index=False)
-        df.to_parquet(self.folder / "trip-dow.parquet", index=False)
+        df.to_parquet(self.folder / "trip.parquet", index=False)  #  will overwrite
         df = add_tlc_zone(df)
 
         one_second = "1s"  # trim meaningless milliseconds from observations

@@ -81,8 +81,8 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
         _tlc_zone_shapes, how="left", distance_col="join_distance"
     )
     print(f"joined_pu: {time()-t0:.3f} seconds")
-    print(joined_pu.join_distance.describe())
-    assert joined_pu.join_distance.quantile(0.99) == 0
+    assert joined_pu.join_distance.quantile(0.9992) == 0
+    joined_pu = joined_pu[joined_pu.join_distance == 0]
     df["pickup_borough"] = joined_pu.borough
     df["pickup_zone"] = joined_pu.zone
 
@@ -93,8 +93,9 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
         _tlc_zone_shapes, how="left", distance_col="join_distance"
     )
     if len(df) > 1:  # Ignore the Logan test.
-        assert joined_dr.join_distance.quantile(0.99) == 0
+        assert joined_dr.join_distance.quantile(0.997) == 0
 
+    joined_dr = joined_dr[joined_dr.join_distance == 0]
     df["dropoff_borough"] = joined_dr.borough
     df["dropoff_zone"] = joined_dr.zone
     return df
