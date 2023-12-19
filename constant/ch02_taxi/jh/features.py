@@ -4,6 +4,7 @@
 
 import warnings
 from collections import Counter
+from time import time
 from typing import Generator
 
 import geopandas as gpd
@@ -12,6 +13,7 @@ import pandas as pd
 from cartopy.geodesic import Geodesic
 
 from constant.util.path import temp_dir
+from constant.util.timing import timed
 
 warnings.filterwarnings("ignore", message="Conversion of an array with ndim > 0")
 
@@ -44,6 +46,7 @@ def _direction(row: pd.Series) -> float:
     return round(bearing)
 
 
+@timed
 def add_direction(df: pd.DataFrame) -> pd.DataFrame:
     df["direction"] = df.apply(lambda row: _direction(row), axis=1)
     return df
@@ -63,6 +66,7 @@ def azimuth(
 _tlc_zone_shapes = gpd.read_file(temp_dir() / "taxi_zones.zip").to_crs("EPSG:2263")
 
 
+@timed
 def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
     wgs_84 = "EPSG:4326"
     df["pickup_pt"] = gpd.points_from_xy(df.pickup_longitude, df.pickup_latitude)
@@ -72,12 +76,13 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
     assert gdf.crs.is_projected
     assert _tlc_zone_shapes.crs.is_projected
 
+    t0 = time()
     joined_pu = gdf.sjoin_nearest(
         _tlc_zone_shapes, how="left", distance_col="join_distance"
     )
-    print('\npickup distance:')
+    print(f"joined_pu: {time()-t0:.3f} seconds")
     print(joined_pu.join_distance.describe())
-    # assert 0 == joined_pu.join_distance.max()
+    assert joined_pu.join_distance.quantile(0.99) == 0
     df["pickup_borough"] = joined_pu.borough
     df["pickup_zone"] = joined_pu.zone
 
@@ -88,9 +93,7 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
         _tlc_zone_shapes, how="left", distance_col="join_distance"
     )
     if len(df) > 1:  # Ignore the Logan test.
-        print('\ndropoff distance:')
-        print(joined_dr.join_distance.describe())
-        # assert 0 == joined_dr.join_distance.max()
+        assert joined_dr.join_distance.quantile(0.99) == 0
 
     df["dropoff_borough"] = joined_dr.borough
     df["dropoff_zone"] = joined_dr.zone

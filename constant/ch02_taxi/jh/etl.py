@@ -1,4 +1,4 @@
-#! /usr/bin/env SQLALCHEMY_WARN_20=1 python
+#! /usr/bin/env _TYPER_STANDARD_TRACEBACK=1 SQLALCHEMY_WARN_20=1 python
 # Copyright 2023 O1 Software Network. MIT licensed.
 
 
@@ -29,7 +29,7 @@ class Etl:
 
     def __init__(self, db_file: Path, decorator: Callable[[Any], Any] = timed) -> None:
         self.folder = db_file.parent.resolve()
-        self.engine = sa.create_engine(f"sqlite:///{db_file}", echo=True)
+        self.engine = sa.create_engine(f"sqlite:///{db_file}", echo=False)
 
         for method_name in dir(self) + dir(Etl):
             attr = getattr(self, method_name)
@@ -46,6 +46,8 @@ class Etl:
         df = discard_outlier_rows(df)
         df = add_direction(df)
         df = add_pickup_dow_hour(df)
+        df.to_parquet(self.folder / "trip.parquet", index=False)
+        df.to_parquet(self.folder / "trip-dow.parquet", index=False)
         df = add_tlc_zone(df)
 
         one_second = "1s"  # trim meaningless milliseconds from observations
@@ -54,7 +56,7 @@ class Etl:
 
         with self.engine.begin() as sess:
             sess.execute(sa.text("DROP TABLE  IF EXISTS  trip"))
-            # sess.execute(self.ddl)
+            sess.execute(self.ddl)
         df = df.drop(columns=["pickup_pt", "dropoff_pt"])
         print(df)
         df.to_sql("trip", self.engine, if_exists="append", index=False)
