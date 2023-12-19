@@ -80,7 +80,8 @@ def add_tlc_zone(df: pd.DataFrame) -> pd.DataFrame:
     joined_pu = gdf.sjoin_nearest(
         _tlc_zone_shapes, how="left", distance_col="join_distance"
     )
-    print(f"joined_pu: {time()-t0:.3f} seconds")
+    elapsed = time() - t0
+    elapsed > 1 and print(f"joined_pu: {elapsed:.3f} seconds")
     assert joined_pu.join_distance.quantile(0.9992) == 0
     joined_pu = joined_pu[joined_pu.join_distance == 0]
     df["pickup_borough"] = joined_pu.borough

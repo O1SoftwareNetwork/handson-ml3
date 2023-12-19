@@ -13,6 +13,7 @@ from geopy.distance import distance
 from ruamel.yaml import YAML
 
 from constant.ch02_taxi.jh.features import (
+    COMPRESSED_DATASET,
     add_direction,
     add_pickup_dow_hour,
     add_tlc_zone,
@@ -46,7 +47,7 @@ class Etl:
         df = discard_outlier_rows(df)
         df = add_direction(df)
         df = add_pickup_dow_hour(df)
-        df.to_parquet(self.folder / "trip.parquet", index=False)  #  will overwrite
+        df.to_parquet(COMPRESSED_DATASET, index=False)  #  JIC -- will overwrite later
         df = add_tlc_zone(df)
 
         one_second = "1s"  # trim meaningless milliseconds from observations
@@ -60,7 +61,7 @@ class Etl:
         print(df)
         df.to_sql("trip", self.engine, if_exists="append", index=False)
 
-        df.to_parquet(self.folder / "trip.parquet", index=False)
+        df.to_parquet(COMPRESSED_DATASET, index=False)
 
         # self._write_yaml_bbox(df)
 

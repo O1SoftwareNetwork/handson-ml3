@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import streamlit as st
-from beartype import beartype
 
 from constant.ch02_taxi.jh.features import COMPRESSED_DATASET, add_pickup_dow_hour
 
@@ -18,6 +17,7 @@ warnings.filterwarnings(
 )
 
 
+@st.cache_data
 def _tight_bbox(df: pd.DataFrame) -> pd.DataFrame:
     return df[
         True
@@ -30,17 +30,18 @@ def _tight_bbox(df: pd.DataFrame) -> pd.DataFrame:
 
 def eda_time(df: pd.DataFrame, num_rows: int = 200_000) -> None:
     df = _tight_bbox(df)[:num_rows]
-    df = add_pickup_dow_hour(df)
     show_dropoff_locations(df)
 
 
 def show_dropoff_locations(df: pd.DataFrame) -> None:
     display_hour = st.slider("hour", 0, 23, 6)
-    display_df = df[df.hour == display_hour]
+    st.write(_plot_fig(df[df.hour == display_hour]))
 
+
+def _plot_fig(df: pd.DataFrame) -> plt.Figure:
     fig, ax = plt.subplots()
     sns.scatterplot(
-        data=display_df,
+        data=df,
         x="dropoff_longitude",
         y="dropoff_latitude",
         size=2,
@@ -49,10 +50,9 @@ def show_dropoff_locations(df: pd.DataFrame) -> None:
     )
     ax.set_xlim(df.dropoff_longitude.min(), df.dropoff_longitude.max())
     ax.set_ylim(df.dropoff_latitude.min(), df.dropoff_latitude.max())
-    st.write(fig)
+    return fig
 
 
-@beartype
 def main(in_file: Path = COMPRESSED_DATASET) -> None:
     eda_time(pd.read_parquet(in_file))
 

@@ -14,6 +14,7 @@ from constant.ch02_taxi.jh.features import (
     add_tlc_zone,
     azimuth,
     get_borough_matrix,
+    get_zone_matrix,
     grand_central_nyc,
 )
 from constant.util.path import constant
@@ -80,6 +81,9 @@ class FeaturesTest(unittest.TestCase):
             " Qu → Bk, Bk → Mn, Mn → Bx, Bx → Mn, EWR → EWR",
             ", ".join(map(_format_two_boroughs, boro_pairs)),
         )
+
+        c = get_zone_matrix(df)
+        self.assertEqual(741, len(c))
 
 
 def _format_two_boroughs(boros_with_count: tuple[tuple[str, str], int]) -> str:
