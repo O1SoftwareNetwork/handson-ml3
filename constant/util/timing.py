@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 
 def timed(
-    func: Callable[[Any], Any], reporting_threshold_sec: float = 0.1
+    func: Callable[[Any], Any], reporting_threshold_sec: float = 0.4
 ) -> Callable[[Any], Any]:
     def wrapped(*args: Any, **kwargs: Any) -> Any:
         t0 = time()

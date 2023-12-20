@@ -10,7 +10,7 @@ import pandas as pd
 import seaborn as sns
 import streamlit as st
 
-from constant.ch02_taxi.jh.features import COMPRESSED_DATASET, add_pickup_dow_hour
+from constant.ch02_taxi.jh.features import COMPRESSED_DATASET
 
 warnings.filterwarnings(
     "ignore",

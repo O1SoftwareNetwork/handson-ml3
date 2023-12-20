@@ -44,7 +44,6 @@ class FeaturesTest(unittest.TestCase):
         df = add_direction(df)
         self.assertEqual(1, df.dow[0])
         self.assertEqual(12, df.hour[0])
-        self.assertEqual(4 * 3600, df.elapsed[0])
 
     def test_constant(self) -> None:
         self.assertEqual("constant", constant().name)

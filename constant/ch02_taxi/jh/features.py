@@ -32,9 +32,6 @@ def add_pickup_dow_hour(df: pd.DataFrame) -> pd.DataFrame:
     """Add day-of-week and hour-of-day features."""
     df.loc[:, ("dow",)] = df["pickup_datetime"].copy().dt.dayofweek  # Monday=0
     df.loc[:, ("hour",)] = df["pickup_datetime"].copy().dt.hour
-    df.loc[:, ("elapsed",)] = (
-        df.dropoff_datetime - df.pickup_datetime
-    ).dt.total_seconds()
     return df
 
 
