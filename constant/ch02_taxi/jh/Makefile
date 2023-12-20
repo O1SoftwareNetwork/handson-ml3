@@ -28,8 +28,10 @@ $(TRAIN): $(TEMP)/train.zip
 	touch $@
 	test $$(wc -l < $@) -eq 1458645
 
+ZONE_URL = 'https://data.cityofnewyork.us/api/geospatial/d3c5-ddgc?method=export&format=Shapefile'
 $(TEMP)/train-10k.csv: $(TRAIN)
 	head -n 10001 $<  > $@
+	cd $(TEMP) && wget -S -O taxi_zones.zip  $(ZONE_URL)
 
 export PYTHONPATH += :../../..
 

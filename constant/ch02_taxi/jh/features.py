@@ -60,7 +60,9 @@ def azimuth(
 
 
 # wgs84:
-_tlc_zone_shapes = gpd.read_file(temp_dir() / "taxi_zones.zip").to_crs("EPSG:2263")
+_tlc_zone_shapes = gpd.read_file(temp_dir() / "constant/taxi_zones.zip").to_crs(
+    "EPSG:2263"
+)
 
 
 @timed
